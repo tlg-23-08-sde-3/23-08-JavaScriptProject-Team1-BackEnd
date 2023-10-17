@@ -7,7 +7,6 @@ const dbURL = `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGO
 module.exports = {
     connect: async () => {
         try {
-            console.log(dbURL);
             await mongoose.connect(dbURL);
             console.log("Connected to DB");
         } catch (error) {
