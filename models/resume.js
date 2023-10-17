@@ -7,6 +7,8 @@ TODO: Add remaining resume properties
 const resumeSchema = new mongoose.Schema(
     {
         candidateId: { type: String, required: true },
+        keywords: { type: Array },
+        summary: { type: String },
         workHistory: { type: Array },
     },
     { timestamps: { createdAt: "created_at" } }
