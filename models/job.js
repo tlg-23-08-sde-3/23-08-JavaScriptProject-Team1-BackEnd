@@ -4,7 +4,15 @@ const mongoose = require("mongoose");
 /*
 TODOs: Add additional properties
 */
-const jobSchema = new mongoose.Schema({
-    status: { type: String, enum: ["open", "closed"], default: "open" },
-    pay: { type: Number, required: true },
-});
+const jobSchema = new mongoose.Schema(
+    {
+        status: { type: String, enum: ["open", "closed"], default: "open" },
+        name: { type: String, required: true },
+        contents: { type: String, required: true },
+        pay: { type: Number },
+        keywords: { type: Array },
+    },
+    { timestamps: { createdAt: "created_at" } }
+);
+
+module.exports = mongoose.model("Job", jobSchema);
