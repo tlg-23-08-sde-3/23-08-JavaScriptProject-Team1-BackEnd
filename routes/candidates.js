@@ -90,7 +90,7 @@ Router.delete("/email/:email", async (req, res) => {
 
     try {
         await Candidate.findOneAndDelete({ email });
-        res.sendStatus(200);
+        res.sendStatus(200); // Send a simple OK if successful
     } catch (error) {
         res.status(500).json({ error: `Deletion of account with an email of ${email} failed` });
     }
