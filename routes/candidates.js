@@ -14,25 +14,20 @@ Usecase: On candidate signup
 */
 Router.post("/signup", async (req, res) => {
    try {
-      
+
+      // check
       const encryptedPassword = await bcrypt.hash(req.body.password, 10);
       const newCandidate = await Candidate.create({
          ...req.body,
          password: encryptedPassword,
       });
 
-      
-
       const token = jwt.sign({ email: newCandidate.email }, "secretkey", {
          expiresIn: "1h",
       });
 
-      
-
       // set http token
       //   res.cookie("token", token);
-
-      
 
       res.status(200).send({ token });
    } catch (error) {
@@ -47,11 +42,8 @@ POST: /candidate/signin
 Router.post("/signin", async (req, res) => {
    const { email, password } = req.body;
 
-
-
    try {
       const candidate = await Candidate.findOne({ email });
-      
 
       if (!candidate) {
          res.status(401).json({ message: "Candidate not found." });
@@ -89,7 +81,7 @@ Usecase: Employer candidate browser
 TODO: determine how to query in mongoose case insensitivity. Current case must match for query results
 TODO: if used on employer candidate browse. Remove dob from results
 */
-Router.get("/", verifyToken,  async (req, res) => {
+Router.get("/", verifyToken, async (req, res) => {
    try {
       const candidates = await Candidate.find(req.query);
       res.send(candidates);
