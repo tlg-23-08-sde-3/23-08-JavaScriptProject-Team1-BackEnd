@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const Job = require("../models/job");
 
 // Create company schema
 /*
