@@ -10,6 +10,7 @@ const jobSchema = new mongoose.Schema(
         status: { type: String, enum: ["open", "closed"], default: "open" },
         name: { type: String, required: true },
         contents: { type: String, required: true },
+        location: { type: String, required: true },
         pay: { type: String },
         keywords: { type: Array },
     },
