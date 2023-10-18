@@ -9,6 +9,7 @@ const { connect } = require("./utils/db");
 
 const candidatesRouter = require("./routes/candidates");
 const companyRouter = require("./routes/companies");
+const jobRouter = require("./routes/jobs");
 
 app.use(express.json()); //Middleware from express on all requests
 app.use(express.urlencoded({ extended: true }));
@@ -17,6 +18,7 @@ app.use(cors());
 
 app.use("/candidate", candidatesRouter);
 app.use("/company", companyRouter);
+app.use("/job", jobRouter);
 
 
 const port = process.env.PORT || 3000;
