@@ -5,6 +5,7 @@ const Company = require("../models/company");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const verifyTokenTest = require("../middlewares/verifyTokenTest");
 
 /*
 POST: /company/signup
@@ -16,7 +17,12 @@ Router.post("/signup", async (req, res) => {
     try {
         req.body.password = await bcrypt.hash(req.body.password, 10);
         const newCompany = await Company.create(req.body);
-        res.send(newCompany);
+
+        const token = jwt.sign({ _id: newCompany._id, email: newCompany.email }, process.env.JWT_KEY, {
+            expiresIn: "1h",
+        });
+
+        res.status(200).send({ _id: newCompany._id, email: newCompany.email, token });
     } catch (error) {
         res.status(500).send(error.message);
     }
@@ -42,7 +48,11 @@ Router.post("/signin", async (req, res) => {
             return res.status(400).send({ error: "invalid password" });
         }
 
-        res.send(company);
+        const token = jwt.sign({ _id: company._id, email: company.email }, process.env.JWT_KEY, {
+            expiresIn: "1h",
+        });
+
+        res.status(200).send({ _id: company._id, email: company.email, token: token });
     } catch (error) {
         res.status(400).send(error.message);
     }
@@ -54,7 +64,7 @@ GET: /company
 Functionality: gets a list of companies based upon queries supplied. If no queries then all companies
 Usecase:
 */
-Router.get("/", async (req, res) => {
+Router.get("/", verifyTokenTest, async (req, res) => {
     try {
         const companies = await Company.find(req.query);
         res.send(companies);
