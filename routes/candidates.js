@@ -3,6 +3,7 @@ const Router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const verifyToken = require("../middlewares/verifyToken");
+const Job = require("../models/job");
 
 const Candidate = require("../models/candidate");
 
@@ -14,7 +15,6 @@ Usecase: On candidate signup
 */
 Router.post("/signup", async (req, res) => {
    try {
-
       // check
       const encryptedPassword = await bcrypt.hash(req.body.password, 10);
       const newCandidate = await Candidate.create({
@@ -58,18 +58,63 @@ Router.post("/signin", async (req, res) => {
                expiresIn: "1h",
             });
 
-            // set http token
-            // res.cookie("token", token, {
-            //    httpOnly: true,
-            // });
-
-            res.status(200).send({ token });
+            res.status(200).send({ token, email: candidate.email });
          } else {
             res.status(401).json({ message: "Incorrect password." });
          }
       }
    } catch (error) {
       res.status(400).json({ message: "Sign in failed." });
+   }
+});
+
+// add favorite jobs
+Router.post("/favorites", async (req, res) => {
+   console.log(req.body);
+   try {
+      const { email, jobId } = req.body;
+
+      const candidate = await Candidate.findOne({ email });
+
+      if (!candidate) {
+         return res.status(404).json({ message: "Candidate not found" });
+      }
+
+      if (candidate.favorites.includes(jobId)) {
+         return res.status(400).json({ message: "Job already in favorites" });
+      }
+
+      candidate.favorites.push(jobId);
+
+      await candidate.save();
+
+      console.log(candidate);
+
+      res.status(200).json({ message: "Job added to favorites" });
+   } catch (error) {
+      res.status(500).json({ message: "Error adding job to favorites" });
+   }
+});
+
+// get favourite jobs
+Router.get("/favorites/:email", async (req, res) => {
+   console.log("here", req.body.email);
+   try {
+      const email = req.params.email;
+
+      const candidate = await Candidate.findOne({ email });
+
+      if (!candidate) {
+         return res.status(404).json({ message: "Candidate not found" });
+      }
+
+      const favoriteJobIds = candidate.favorites;
+
+      const favoriteJobs = await Job.find({ _id: { $in: favoriteJobIds } });
+
+      res.status(200).json(favoriteJobs);
+   } catch (error) {
+      res.status(500).json({ message: "Error retrieving favorite jobs" });
    }
 });
 

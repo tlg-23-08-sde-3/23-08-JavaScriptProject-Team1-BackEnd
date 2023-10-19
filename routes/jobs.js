@@ -33,15 +33,6 @@ Usecase:
 Router.get("/", async (req, res) => {
    if (Object.keys(req.query).length > 0) {
       console.log(req.query);
-      //   try {
-      //      const foundJob = await Job.find(req.query)
-      //         .collation({ locale: "en", strength: 2 }) // case insensitive match
-      //         .exec();
-
-      //      res.send(foundJob);
-      //   } catch (error) {
-      //      res.status(500).send({ error: "Job retrieval failed" });
-      //   }
 
       const query = {};
 
