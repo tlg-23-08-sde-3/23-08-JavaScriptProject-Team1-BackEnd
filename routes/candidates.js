@@ -97,8 +97,9 @@ Router.post("/favorites", async (req, res) => {
 });
 
 // get favourite jobs
-Router.get("/favorites/:email", async (req, res) => {
+Router.get("/favorites/:email", verifyToken, async (req, res) => {
    console.log("here", req.body.email);
+   console.log("verify token route");
    try {
       const email = req.params.email;
 

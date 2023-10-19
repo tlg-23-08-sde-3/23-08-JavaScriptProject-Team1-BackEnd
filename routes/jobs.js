@@ -53,9 +53,9 @@ Router.get("/", async (req, res) => {
       }
 
       try {
-         const foundJob = await Job.find(query)
-            .collation({ locale: "en", strength: 2 }) // case insensitive match
-            .exec();
+         const foundJob = await Job.find(query);
+         // .collation({ locale: "en", strength: 2 }) // case insensitive match
+         // .exec();
 
          res.send(foundJob);
       } catch (error) {
