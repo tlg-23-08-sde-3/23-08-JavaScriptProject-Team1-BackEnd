@@ -13,6 +13,7 @@ const jobSchema = new mongoose.Schema(
         location: { type: String, required: true },
         pay: { type: String },
         keywords: { type: Array },
+        applicants: [{ type: mongoose.ObjectId, ref: "Candidate" }],
     },
     { timestamps: { createdAt: "created_at" } }
 );

@@ -5,6 +5,7 @@ const Company = require("../models/company");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const verifyToken = require("../middlewares/verifyToken");
 const verifyTokenTest = require("../middlewares/verifyTokenTest");
 
 /*
@@ -64,7 +65,7 @@ GET: /company
 Functionality: gets a list of companies based upon queries supplied. If no queries then all companies
 Usecase:
 */
-Router.get("/", verifyTokenTest, async (req, res) => {
+Router.get("/", async (req, res) => {
     try {
         const companies = await Company.find(req.query);
         res.send(companies);
@@ -96,7 +97,7 @@ Router.get("/email/:email", async (req, res) => {
 /*
 
 */
-Router.put("/email/:email", async (req, res) => {
+Router.put("/email/:email", verifyTokenTest, async (req, res) => {
     const { email } = req.params;
 
     try {
@@ -116,7 +117,7 @@ DELTE: /company/email/:email
 Functionality: deletes a single company based upon email
 Usecase:
 */
-Router.delete("/email/:email", async (req, res) => {
+Router.delete("/email/:email", verifyTokenTest, async (req, res) => {
     const { email } = req.params;
 
     try {

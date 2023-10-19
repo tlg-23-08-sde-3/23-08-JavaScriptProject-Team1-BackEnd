@@ -4,6 +4,8 @@ const Router = express.Router();
 const Job = require("../models/job");
 const Company = require("../models/company");
 
+const verifyTokenTest = require("../middlewares/verifyTokenTest");
+
 //TODO: Validate and review all error status/messages
 
 /*
@@ -12,7 +14,7 @@ POST /job
 Functionality: creates a new job
 Usecase: employer uses to create a new job from a job form
 */
-Router.post("/", async (req, res) => {
+Router.post("/", verifyTokenTest, async (req, res) => {
     try {
         const company = await Company.findById(req.body.companyId);
         req.body.companyId = company._id;
@@ -114,7 +116,7 @@ PUT: /job/id/:_id
 Functionality: updates a job posting based on req.body fields
 Usecase:
 */
-Router.put("/id/:_id", async (req, res) => {
+Router.put("/id/:_id", verifyTokenTest, async (req, res) => {
     const { _id } = req.params;
 
     try {
@@ -138,7 +140,7 @@ Type:
 Functionality:
 Usecase:
 */
-Router.delete("/id/:_id", async (req, res) => {
+Router.delete("/id/:_id", verifyTokenTest, async (req, res) => {
     const { _id } = req.params;
 
     try {
