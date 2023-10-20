@@ -4,6 +4,8 @@ const Router = express.Router();
 const Job = require("../models/job");
 const Company = require("../models/company");
 
+const verifyTokenTest = require("../middlewares/verifyTokenTest");
+
 //TODO: Validate and review all error status/messages
 
 /*
@@ -12,16 +14,16 @@ POST /job
 Functionality: creates a new job
 Usecase: employer uses to create a new job from a job form
 */
-Router.post("/", async (req, res) => {
-   try {
-      const company = await Company.findById(req.body.companyId);
-      req.body.companyId = company._id;
+Router.post("/", verifyTokenTest, async (req, res) => {
+    try {
+        const company = await Company.findById(req.body.companyId);
+        req.body.companyId = company._id;
 
-      const newJob = await Job.create(req.body);
-      res.send(newJob);
-   } catch (error) {
-      res.status(500).send(error.message);
-   }
+        const newJob = await Job.create(req.body);
+        res.send(newJob);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
 });
 
 /*
@@ -31,6 +33,7 @@ Functionality: gets a job list based upon query
 Usecase:
 */
 Router.get("/", async (req, res) => {
+
    if (Object.keys(req.query).length > 0) {
       console.log(req.query);
 
@@ -67,6 +70,7 @@ Router.get("/", async (req, res) => {
          res.status(500).send({ error: "Job retrieval failed" });
       }
    }
+
 });
 
 /*
@@ -76,16 +80,35 @@ Functionality: get a job by Id
 Usecase:
 */
 Router.get("/id/:_id", async (req, res) => {
-   const { _id } = req.params;
-   try {
-      const job = await Job.findById({ _id });
-      if (!job) {
-         return res.status(404).json({ error: `No job found with ID: ${_id}` });
-      }
-      res.send(job);
-   } catch (error) {
-      res.status(500).send({ error: "Job retrieval failed" });
-   }
+    const { _id } = req.params;
+    try {
+        const job = await Job.findById({ _id });
+        if (!job) {
+            return res.status(404).json({ error: `No job found with ID: ${_id}` });
+        }
+        res.send(job);
+    } catch (error) {
+        res.status(500).send({ error: "Job retrieval failed" });
+    }
+});
+
+/*
+GET: /job/company/:companyId
+
+Functionality: get all jobs based upon companyId
+Usecase:
+*/
+Router.get("/company/:companyId", async (req, res) => {
+    try {
+        let { companyId } = req.params;
+
+        const company = await Company.findById(companyId);
+        companyId = company._id;
+        const jobs = await Job.find({ companyId }).exec();
+        res.send(jobs);
+    } catch (error) {
+        res.status(500).send({ error: "Job retrieval failed" });
+    }
 });
 
 /*
@@ -94,22 +117,22 @@ PUT: /job/id/:_id
 Functionality: updates a job posting based on req.body fields
 Usecase:
 */
-Router.put("/id/:_id", async (req, res) => {
-   const { _id } = req.params;
+Router.put("/id/:_id", verifyTokenTest, async (req, res) => {
+    const { _id } = req.params;
 
-   try {
-      let updatedJob = await Job.findOneAndUpdate({ _id }, req.body, {
-         returnOriginal: false,
-      });
-      if (!updatedJob) {
-         return res.status(404).json({ error: `No job found with ID: ${_id}` });
-      }
-      res.send(updatedJob);
-   } catch (error) {
-      res.status(500).json({
-         error: `Job update failed: ${error.path} - ${error.stringValue} - ${error.messageFormat}`,
-      });
-   }
+    try {
+        let updatedJob = await Job.findOneAndUpdate({ _id }, req.body, {
+            returnOriginal: false,
+        });
+        if (!updatedJob) {
+            return res.status(404).json({ error: `No job found with ID: ${_id}` });
+        }
+        res.send(updatedJob);
+    } catch (error) {
+        res.status(500).json({
+            error: `Job update failed: ${error.path} - ${error.stringValue} - ${error.messageFormat}`,
+        });
+    }
 });
 
 /*
@@ -118,17 +141,17 @@ Type:
 Functionality:
 Usecase:
 */
-Router.delete("/id/:_id", async (req, res) => {
-   const { _id } = req.params;
+Router.delete("/id/:_id", verifyTokenTest, async (req, res) => {
+    const { _id } = req.params;
 
-   try {
-      await Job.findOneAndDelete({ _id });
-      res.sendStatus(200); // Send a simple OK if successful
-   } catch (error) {
-      res.status(500).json({
-         error: `Deletion of job with an id of ${_id} failed`,
-      });
-   }
+    try {
+        await Job.findOneAndDelete({ _id });
+        res.sendStatus(200); // Send a simple OK if successful
+    } catch (error) {
+        res.status(500).json({
+            error: `Deletion of job with an id of ${_id} failed`,
+        });
+    }
 });
 
 module.exports = Router;
