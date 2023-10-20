@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 function verifyToken(req, res, next) {
+   
    const auth = req.header("Authorization");
    const token = auth.split(" ")[1];
 
@@ -9,7 +10,6 @@ function verifyToken(req, res, next) {
       return res.status(400).json({ message: "No Token Provided" });
    }
 
-   console.log("here checking");
 
    jwt.verify(token, "secretkey", (err, email) => {
       if (err) {
