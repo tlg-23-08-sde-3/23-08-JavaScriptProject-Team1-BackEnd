@@ -43,19 +43,18 @@ Router.get("/", async (req, res) => {
          };
       }
 
-      // Add other query parameters as needed
       if (req.query.location) {
-         query["location"] = req.query.location;
+         query["location"] = { $regex: new RegExp(req.query.location, "i") };
       }
 
       if (req.query.name) {
-         query["name"] = req.query.name;
+         query["name"] = { $regex: new RegExp(req.query.name, "i") };
       }
 
       try {
-         const foundJob = await Job.find(query);
-         // .collation({ locale: "en", strength: 2 }) // case insensitive match
-         // .exec();
+         const foundJob = await Job.find(query)
+         .collation({ locale: "en", strength: 2 }) // case insensitive match
+         .exec();
 
          res.send(foundJob);
       } catch (error) {
