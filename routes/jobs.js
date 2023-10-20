@@ -33,43 +33,44 @@ Functionality: gets a job list based upon query
 Usecase:
 */
 Router.get("/", async (req, res) => {
-    if (Object.keys(req.query).length > 0) {
-        console.log(req.query);
 
-        const query = {};
+   if (Object.keys(req.query).length > 0) {
+      console.log(req.query);
 
-        // Check if keywords are provided in the query
-        if (req.query.keywords) {
-            query["keywords"] = {
-                $elemMatch: { $regex: new RegExp(req.query.keywords, "i") },
-            };
-        }
+      const query = {};
 
-        // Add other query parameters as needed
-        if (req.query.location) {
-            query["location"] = req.query.location;
-        }
+      // Check if keywords are provided in the query
+      if (req.query.keywords) {
+         query["keywords"] = {
+            $elemMatch: { $regex: new RegExp(req.query.keywords, "i") },
+         };
+      }
 
-        if (req.query.name) {
-            query["name"] = req.query.name;
-        }
+      if (req.query.location) {
+         query["location"] = { $regex: new RegExp(req.query.location, "i") };
+      }
 
-        try {
-            const foundJob = await Job.find(query)
-                .collation({ locale: "en", strength: 2 }) // case insensitive match
-                .exec();
+      if (req.query.name) {
+         query["name"] = { $regex: new RegExp(req.query.name, "i") };
+      }
 
-            res.send(foundJob);
-        } catch (error) {
-            res.status(500).send({ error: "Job retrieval failed" });
-        }
-    } else {
-        try {
-            res.send(await Job.find());
-        } catch (error) {
-            res.status(500).send({ error: "Job retrieval failed" });
-        }
-    }
+      try {
+         const foundJob = await Job.find(query)
+         .collation({ locale: "en", strength: 2 }) // case insensitive match
+         .exec();
+
+         res.send(foundJob);
+      } catch (error) {
+         res.status(500).send({ error: "Job retrieval failed" });
+      }
+   } else {
+      try {
+         res.send(await Job.find());
+      } catch (error) {
+         res.status(500).send({ error: "Job retrieval failed" });
+      }
+   }
+
 });
 
 /*

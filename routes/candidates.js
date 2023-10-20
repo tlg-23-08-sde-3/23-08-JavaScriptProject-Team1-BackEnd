@@ -67,10 +67,12 @@ Router.post("/signin", async (req, res) => {
 });
 
 // add favorite jobs
-Router.post("/favorites", async (req, res) => {
-    console.log(req.body);
-    try {
-        const { email, jobId } = req.body;
+
+Router.post("/favorites/add", verifyToken, async (req, res) => {
+   console.log(req.body);
+   try {
+      const { email, jobId } = req.body;
+
 
         const candidate = await Candidate.findOne({ email });
 
@@ -94,11 +96,39 @@ Router.post("/favorites", async (req, res) => {
     }
 });
 
+// remove favourite jobs
+Router.post("/favorites/remove", verifyToken, async (req, res) => {
+   try {
+      const { email, jobId } = req.body;
+
+      const candidate = await Candidate.findOne({ email });
+
+      if (!candidate) {
+         return res.status(404).json({ message: "Candidate not found" });
+      }
+
+      if (!candidate.favorites.includes(jobId)) {
+         return res.status(400).json({ message: "Job not in favorites" });
+      }
+
+      candidate.favorites = candidate.favorites.filter(favJobId => favJobId !== jobId);
+
+      await candidate.save();
+
+      res.status(200).json({ message: "Job removed from favorites" });
+   } catch (error) {
+      res.status(500).json({ message: "Error removing job from favorites" });
+   }
+});
+
 // get favourite jobs
-Router.get("/favorites/:email", async (req, res) => {
-    console.log("here", req.body.email);
-    try {
-        const email = req.params.email;
+
+Router.get("/favorites/:email", verifyToken, async (req, res) => {
+   console.log("here", req.body.email);
+   console.log("verify token route");
+   try {
+      const email = req.params.email;
+
 
         const candidate = await Candidate.findOne({ email });
 
