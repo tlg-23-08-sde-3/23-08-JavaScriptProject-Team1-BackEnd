@@ -6,7 +6,6 @@ const Company = require("../models/company");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const verifyToken = require("../middlewares/verifyToken");
-const verifyTokenTest = require("../middlewares/verifyTokenTest");
 
 /*
 POST: /company/signup
@@ -34,7 +33,6 @@ POST: /company/signin
 
 Functionality: verifies password on login of company & company exists
 Usecase: on company signin
-TODO: Add tokens and move auth to utils folder
 */
 Router.post("/signin", async (req, res) => {
     const email = req.body.email;
@@ -97,7 +95,7 @@ Router.get("/email/:email", async (req, res) => {
 /*
 
 */
-Router.put("/email/:email", verifyTokenTest, async (req, res) => {
+Router.put("/email/:email", verifyToken, async (req, res) => {
     const { email } = req.params;
 
     try {
@@ -117,7 +115,7 @@ DELTE: /company/email/:email
 Functionality: deletes a single company based upon email
 Usecase:
 */
-Router.delete("/email/:email", verifyTokenTest, async (req, res) => {
+Router.delete("/email/:email", verifyToken, async (req, res) => {
     const { email } = req.params;
 
     try {

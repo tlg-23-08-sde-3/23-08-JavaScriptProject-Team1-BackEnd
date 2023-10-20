@@ -3,7 +3,6 @@ const Router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const verifyToken = require("../middlewares/verifyToken");
-const verifyTokenTest = require("../middlewares/verifyTokenTest");
 const Job = require("../models/job");
 
 const Candidate = require("../models/candidate");
@@ -22,15 +21,14 @@ Router.post("/signup", async (req, res) => {
             ...req.body,
             password: encryptedPassword,
         });
-
-        const token = jwt.sign({ email: newCandidate.email }, "secretkey", {
+        const token = jwt.sign({ _id: newCandidate._id, email: newCandidate.email }, process.env.JWT_KEY, {
             expiresIn: "1h",
         });
 
         // set http token
         //   res.cookie("token", token);
 
-        res.status(200).send({ token });
+        res.status(200).send({ _id: newCandidate._id, email: newCandidate.email, token });
     } catch (error) {
         res.status(500).send(error.message);
     }
@@ -52,11 +50,11 @@ Router.post("/signin", async (req, res) => {
             const passwordMatch = await bcrypt.compare(password, candidate.password);
 
             if (passwordMatch) {
-                const token = jwt.sign({ email: candidate.email }, "secretkey", {
+                const token = jwt.sign({ _id: candidate._id, email: candidate.email }, process.env.JWT_KEY, {
                     expiresIn: "1h",
                 });
 
-                res.status(200).send({ token, email: candidate.email });
+                res.status(200).send({ _id: candidate._id, email: candidate.email, token });
             } else {
                 res.status(401).json({ message: "Incorrect password." });
             }
@@ -69,10 +67,9 @@ Router.post("/signin", async (req, res) => {
 // add favorite jobs
 
 Router.post("/favorites/add", verifyToken, async (req, res) => {
-   console.log(req.body);
-   try {
-      const { email, jobId } = req.body;
-
+    console.log(req.body);
+    try {
+        const { email, jobId } = req.body;
 
         const candidate = await Candidate.findOne({ email });
 
@@ -87,9 +84,6 @@ Router.post("/favorites/add", verifyToken, async (req, res) => {
         candidate.favorites.push(jobId);
 
         await candidate.save();
-
-        console.log(candidate);
-
         res.status(200).json({ message: "Job added to favorites" });
     } catch (error) {
         res.status(500).json({ message: "Error adding job to favorites" });
@@ -98,37 +92,35 @@ Router.post("/favorites/add", verifyToken, async (req, res) => {
 
 // remove favourite jobs
 Router.post("/favorites/remove", verifyToken, async (req, res) => {
-   try {
-      const { email, jobId } = req.body;
+    try {
+        const { email, jobId } = req.body;
 
-      const candidate = await Candidate.findOne({ email });
+        const candidate = await Candidate.findOne({ email });
 
-      if (!candidate) {
-         return res.status(404).json({ message: "Candidate not found" });
-      }
+        if (!candidate) {
+            return res.status(404).json({ message: "Candidate not found" });
+        }
 
-      if (!candidate.favorites.includes(jobId)) {
-         return res.status(400).json({ message: "Job not in favorites" });
-      }
+        if (!candidate.favorites.includes(jobId)) {
+            return res.status(400).json({ message: "Job not in favorites" });
+        }
 
-      candidate.favorites = candidate.favorites.filter(favJobId => favJobId !== jobId);
+        candidate.favorites = candidate.favorites.filter((favJobId) => favJobId !== jobId);
 
-      await candidate.save();
+        await candidate.save();
 
-      res.status(200).json({ message: "Job removed from favorites" });
-   } catch (error) {
-      res.status(500).json({ message: "Error removing job from favorites" });
-   }
+        res.status(200).json({ message: "Job removed from favorites" });
+    } catch (error) {
+        res.status(500).json({ message: "Error removing job from favorites" });
+    }
 });
 
 // get favourite jobs
 
 Router.get("/favorites/:email", verifyToken, async (req, res) => {
-   console.log("here", req.body.email);
-   console.log("verify token route");
-   try {
-      const email = req.params.email;
-
+    const email = req.params.email;
+    try {
+        const email = req.params.email;
 
         const candidate = await Candidate.findOne({ email });
 
@@ -150,9 +142,6 @@ Router.get("/favorites/:email", verifyToken, async (req, res) => {
 GET: /candidate/
 Functionality: gets candidates based upon query submission.
 Usecase: Employer candidate browser
-
-TODO: determine how to query in mongoose case insensitivity. Current case must match for query results
-TODO: if used on employer candidate browse. Remove dob from results
 */
 Router.get("/", verifyToken, async (req, res) => {
     try {
@@ -167,8 +156,6 @@ Router.get("/", verifyToken, async (req, res) => {
 GET: /candidate/email/
 Functionality: gets a single candidate based upon email
 Usecase: when candidate selects to view their account
-
-TODO: ?? Remove if. Maybe front end should handle the display no candidate found message if an empty array returned
 */
 Router.get("/email/:email", verifyToken, async (req, res) => {
     const { email } = req.params;
@@ -188,9 +175,6 @@ Router.get("/email/:email", verifyToken, async (req, res) => {
 Update: /candidate/email/
 Functionality: updates a candidates account based upon email
 Usecase: when candidate decides to edit their account
-
-DONE: Verified unique holds during update > TODO: ensure unique email holds during update. If not add validation middleware
-DONE: Type in if satetment > TODO: updates candidate but returns catch error. determine why
 */
 Router.put("/email/:email", verifyToken, async (req, res) => {
     const { email } = req.params;
